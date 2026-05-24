@@ -1,0 +1,7 @@
+Defect_Type,Count,Pct_of_NG,Cumulative_Pct
+Edge_Chipping,1560,80.95,80.95
+Scratch,170,8.82,89.77
+Particle,100,5.19,94.96
+Strengthening_OOS,77,4.0,98.96
+Dimension_OOS,15,0.78,99.74
+Warpage_OOS,5,0.26,100.0
