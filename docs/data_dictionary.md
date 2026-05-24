@@ -38,8 +38,8 @@ Each row represents a single cover glass unit traced from raw material through f
 
 | Field Name | Data Type | Unit | Example | Why It Matters |
 |------------|-----------|------|---------|----------------|
-| `Tool_Life_Pct` | float | % | `78.5` | Remaining tool life; chipping often rises above ~70–80% wear |
-| `Coolant_Pressure_bar` | float | bar | `3.2` | Low coolant reduces chip evacuation and increases edge damage |
+| `Tool_Life_Pct` | float | % | `78.5` | Tool life consumed; chipping risk begins to increase around **75%**, especially when combined with coolant pressure instability |
+| `Coolant_Pressure_bar` | float | bar | `3.2` | Coolant delivery stability; low pressure amplifies chipping when `Tool_Life_Pct` ≥ 75% |
 | `Spindle_Speed_rpm` | int | rpm | `24000` | Process stability context for CNC step |
 | `Feed_Rate_mm_min` | float | mm/min | `850` | High feed can increase chipping on brittle edges |
 | `Cycle_Time_sec` | float | sec | `42.3` | Proxy for process stability and handling cadence |
@@ -56,8 +56,8 @@ Each row represents a single cover glass unit traced from raw material through f
 | `Warpage_mm` | float | mm | `0.038` | Flatness CTQ; downstream handling and assembly risk |
 | `CS_MPa` | float | MPa | `782` | Compressive stress after ion exchange |
 | `DOL_um` | float | μm | `43.1` | Depth of compressive layer |
-| `Haze_pct` | float | % | `0.32` | Optical quality; secondary in Phase 1 |
-| `Contact_Angle_deg` | float | degrees | `112.5` | Coating performance; secondary in Phase 1 |
+| `Haze_pct` | float | % | `0.32` | Optical quality; **Phase 2 / deferred** (coating products only; may be null) |
+| `Contact_Angle_deg` | float | degrees | `112.5` | Coating performance; **Phase 2 / deferred** (may be null) |
 
 ---
 
@@ -91,7 +91,7 @@ Each row represents a single cover glass unit traced from raw material through f
 |------------|-----------|------|---------|----------------|
 | `Chamfer_Out_of_Spec` | bool | — | `False` | Quick filter against chamfer spec limits |
 | `Chipping_Fail` | bool | — | `True` | Binary fail against chipping limit (e.g., > 80 μm) |
-| `Tool_Wear_Bin` | string | — | `High_70_90pct` | Binned tool life for stratification |
+| `Tool_Wear_Bin` | string | — | `High_75_90pct` | Binned tool life for stratification (≥ 75% = elevated chipping risk band) |
 | `Week` | string | — | `2026-W08` | Weekly yield and SPC aggregation |
 | `Risk_Score` | float | 0–1 | `0.73` | ML-predicted chipping risk (added after model training) |
 
@@ -100,7 +100,8 @@ Each row represents a single cover glass unit traced from raw material through f
 ## Data Quality and Simulation Rules
 
 - **Fixed random seed** for reproducibility across generation runs.
-- **Embedded special causes** in synthetic data (e.g., one machine + tool combination with elevated chipping, one fixture with chamfer bias, night-shift coolant drift).
+- **Embedded special causes** in synthetic data (e.g., one `Machine_ID` + `Tool_ID` combination with elevated chipping above 75% tool life, one `Fixture_ID` with chamfer bias, night-shift `Coolant_Pressure_bar` drift).
+- **Tool wear threshold:** chipping risk begins to increase around **75%** `Tool_Life_Pct`, especially when combined with coolant pressure instability.
 - **Realistic null rates:** `ORT_Result` mostly null; coating CTQs may be null for non-coated models.
 - **No real company names** in field values or metadata.
 - **Label clearly** in all outputs: "Simulated Data."
@@ -125,4 +126,4 @@ Each row represents a single cover glass unit traced from raw material through f
 | `src/spc.py` | `Chamfer_Width_mm`, `Chipping_Size_um`, `Process_Time`, `Machine_ID` |
 | `src/capability.py` | `Chamfer_Width_mm`, `Thickness_mm`, spec limits |
 | `src/heatmap.py` | `Machine_ID`, `Shift`, `Defect_Type`, `Defect_Location` |
-| `src/ml_risk.py` | Process parameters + traceability features → `Chipping_Fail` |
+| `src/ml_risk.py` | `Machine_ID`, `Tool_ID`, `Fixture_ID`, `Shift`, `Tool_Life_Pct`, `Coolant_Pressure_bar`, `Spindle_Speed_rpm`, `Feed_Rate_mm_min` → `Chipping_Fail` |

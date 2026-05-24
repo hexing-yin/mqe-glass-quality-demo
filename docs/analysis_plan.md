@@ -121,35 +121,39 @@ A high-volume cover glass line shows **increased edge chipping and chamfer width
 
 ### Step 6 — Root Cause Stratification
 
-**Objective:** Form and test hypotheses aligned with CNC physics.
+**Objective:** Form and test hypotheses aligned with CNC physics using descriptive, engineering-focused summaries—not predictive modeling.
 
 **Hypotheses to test (simulated ground truth expected in data):**
-1. **Tool wear:** `Tool_Life_Pct` > 75% correlates with higher `Chipping_Size_um`
-2. **Coolant pressure:** Low `Coolant_Pressure_bar` on Night shift
-3. **Fixture effect:** `FIX-B2` shows chamfer width bias
-4. **Machine variation:** `CNC-04` elevated edge chip rate vs. fleet median
-5. **Interaction:** High tool wear + low coolant = disproportionate chipping
+1. **Tool wear:** `Tool_Life_Pct` ≥ 75% correlates with higher `Chipping_Size_um`
+2. **Coolant pressure:** Low `Coolant_Pressure_bar` on `Shift` = Night
+3. **Fixture effect:** `Fixture_ID` = FIX-B2 shows chamfer width bias
+4. **Machine variation:** `Machine_ID` = CNC-04 elevated edge chip rate vs. fleet median
+5. **Interaction:** High `Tool_Life_Pct` + low `Coolant_Pressure_bar` → disproportionate chipping
 
 **Python:**
-- Correlation and grouped summaries
-- Simple logistic regression: `Chipping_Fail ~ Tool_Life_Pct + Coolant_Pressure_bar + CMC factors`
+- Grouped fail rate summaries by `Machine_ID`, `Tool_ID`, `Fixture_ID`, `Shift`
+- Box plots of `Chipping_Size_um` and `Chamfer_Width_mm` by those factors
+- Stratified Pareto of `Defect_Type` within top suspect machines or shifts
+- Summaries by `Tool_Wear_Bin` (≥ 75% vs. below) and `Coolant_Pressure_bar` quartile
+- Cross-tabs: `Machine_ID × Shift`, `Tool_ID × Tool_Wear_Bin`, `Fixture_ID × Chamfer_Width_mm` mean
 - Document findings in `outputs/reports/root_cause_summary.md`
 
-**JMP:**
-- Fit Model: effect screening, interaction plots
-- Partition platform for decision-tree view of chipping fail
+**JMP (manual live demo — see Step 8):**
+- Graph Builder: compare `Chipping_Size_um` across `Machine_ID`, `Tool_ID`, `Fixture_ID`, `Shift`
+- Tabulate fail rates by `Tool_Wear_Bin` and coolant pressure quartile
 
 ---
 
 ### Step 7 — Simple ML Risk Prediction (Supporting)
 
-**Objective:** Flag high-risk process windows for preventive review—not to replace engineering judgment.
+**Objective:** Flag high-risk process windows for preventive review—not to replace engineering judgment. This is the **only** step that uses logistic regression or other ML models.
 
-**Inputs:** Traceability + process parameters → target `Chipping_Fail` or high `Chipping_Size_um`
+**Inputs:** `Machine_ID`, `Tool_ID`, `Fixture_ID`, `Shift`, `Tool_Life_Pct`, `Coolant_Pressure_bar`, `Spindle_Speed_rpm`, `Feed_Rate_mm_min` → target `Chipping_Fail` or high `Chipping_Size_um`
 
 **Python (`src/ml_risk.py`):**
 - Train/test split with fixed seed
 - Model: logistic regression or random forest (interpretable feature importance)
+- Example formula: `Chipping_Fail ~ Tool_Life_Pct + Coolant_Pressure_bar + Machine_ID + Tool_ID + Fixture_ID + Shift + Spindle_Speed_rpm + Feed_Rate_mm_min`
 - Output: `Risk_Score` per unit, precision/recall at useful threshold
 - Feature importance bar chart
 
@@ -158,8 +162,8 @@ A high-volume cover glass line shows **increased edge chipping and chamfer width
 - No claim of production deployment
 - Present as "prioritization aid" in interview narrative
 
-**JMP:**
-- Optional score validation: overlay predicted risk on Graph Builder
+**JMP (manual live demo — see Step 8):**
+- Optional score validation: overlay `Risk_Score` on Graph Builder using exported data
 
 ---
 
@@ -168,13 +172,14 @@ A high-volume cover glass line shows **increased edge chipping and chamfer width
 **Objective:** Enable confirmatory analysis and interview demo in JMP.
 
 **Python:**
-- Export analysis-ready dataset to `outputs/reports/cover_glass_jmp_export.xlsx` (via `openpyxl`)
+- Export analysis-ready dataset to `outputs/reports/cover_glass_jmp_export.xlsx` or CSV (via `openpyxl` / pandas)
 - Include data dictionary sheet and spec limits sheet
 - Column types formatted for JMP import
 
-**JMP (manual / scripted in demo):**
-- Control charts, capability, Fit Model, Graph Builder
-- Used to show fluency with industry-standard MQE tooling alongside Python
+**JMP (manual / live demo only):**
+- Import the exported CSV or Excel file; all JMP work is done interactively during interview prep or live demo
+- No JMP scripts are generated from Python—JMP complements the reproducible Python pipeline, not replaces it
+- Typical platforms: Control Chart Builder, Process Capability, Fit Model, Graph Builder, Partition
 
 ---
 
@@ -191,7 +196,7 @@ A high-volume cover glass line shows **increased edge chipping and chamfer width
 
 **Preventive control:**
 - SPC alerts on chamfer width with auto-stop rule
-- Tool life hard stop at 80%
+- Tool life hard stop at 75% (aligned with elevated chipping risk threshold)
 - Coolant pressure interlock log
 - ML risk score dashboard (future Streamlit phase) for engineering review queue
 
@@ -206,12 +211,14 @@ A high-volume cover glass line shows **increased edge chipping and chamfer width
 |----------|--------|-----|
 | Data generation & validation | ✅ Primary | — |
 | Automated batch charts & reports | ✅ Primary | — |
-| Pareto, SPC, capability scripts | ✅ Primary | Confirm / explore |
-| Interactive hypothesis testing | Export data | ✅ Primary |
-| Effect screening & interactions | Basic stats | ✅ Primary |
-| ML risk model training | ✅ Primary | Optional validation |
-| Interview demo | Streamlit (later) + notebooks | Live JMP walkthrough |
-| Reproducible pipeline | ✅ Primary | Manual import |
+| Pareto, SPC, capability scripts | ✅ Primary | — |
+| Root cause stratification (descriptive) | ✅ Primary | — |
+| ML risk model training | ✅ Primary | — |
+| Data export for JMP | ✅ Primary (CSV/Excel) | — |
+| Interactive confirmatory analysis | — | ✅ Manual live demo only |
+| Effect screening & interactions | — | ✅ Manual (Fit Model, Partition) |
+| Interview demo | Notebooks + Streamlit (later) | Live walkthrough on imported export |
+| Reproducible pipeline | ✅ Primary | Not scripted from Python |
 
 ---
 

@@ -19,17 +19,16 @@ This matrix links process steps to Critical-to-Quality characteristics (CTQs), c
 | Cutting / Laser Cutting | Thickness (edge zone) | Micro-crack, edge chip-out | Cut speed, laser power drift, dull wheel | Microscope + dimensional check | Stratify by cut machine; time-series SPC |
 | Cutting / Laser Cutting | Chamfer Width (pre-CNC) | Oversize blank, kerf inconsistency | Fixture drift, program offset error | CMM / vision | Traceability to CNC incoming edge state |
 | **CNC Contour / Chamfering** | **Chamfer Width** | **Chamfer too wide / narrow** | **Tool wear, coolant pressure low, fixture misalignment, program offset, machine spindle runout** | **Inline vision or CMM** | **SPC (X-bar/R), capability (Cp/Cpk), heatmap by Machine × Shift** |
-| **CNC Contour / Chamfering** | **Chipping Size** | **Edge chip, burr, breakout** | **Worn tool, insufficient coolant, high feed rate, glass edge pre-damage, fixture vibration, operator setup error** | **Microscope / AOI (μm scale)** | **Pareto by defect type, root cause stratification (Tool, Machine, Shift), ML risk score** |
+| **CNC Contour / Chamfering** | **Chipping Size** | **Edge chip, burr, breakout** | **Worn tool (≥ 75% life), insufficient coolant, high feed rate, glass edge pre-damage, fixture vibration, operator setup error** | **Microscope / AOI (μm scale)** | **Pareto by defect type; root cause stratification by Tool, Machine, Fixture, Shift** |
 | CNC Contour / Chamfering | Thickness (local) | Feature oversize / undersize | Tool path error, thermal expansion, fixturing slip | CMM | Capability study; correlation with chipping |
 | Edge Polishing | Chamfer Width | Under/over polish | Polish time, wheel wear, incoming chamfer variation | Vision / CMM | Before/after comparison; secondary SPC |
 | Edge Polishing | Chipping Size | Re-exposed chip | Incoming CNC chip not removed, aggressive polish | Microscope / AOI | Trace back to CNC tool window |
 | Cleaning | AOI Result (cosmetic) | Stain, particle | Incomplete rinse, dirty bath, handling | Visual / particle counter | Low priority Pareto in Phase 1 |
 | Chemical Strengthening | CS (Compressive Stress) | Low CS | Bath chemistry drift, time/temperature OOS, edge damage accelerating exchange | Fragmentation or stress-optical method | SPC on CS; correlation with edge defects |
 | Chemical Strengthening | DOL (Depth of Layer) | Low DOL | Bath age, immersion time, glass composition | Same as CS | Capability vs. spec; joint CS–DOL review |
-| Chemical Strengthening | Warpage | Increased bow | Ion exchange stress imbalance, thin regions | Flatness scan | Regression vs. thickness and edge quality |
-| Chemical Strengthening | Haze | Visible haze | Bath contamination, incomplete clean | Haze meter | Monitor only in Phase 1 |
-| Coating / Printing | Haze | Coating haze | Coating thickness, cure profile | Haze meter | Deferred analysis |
-| Coating / Printing | Contact Angle | Low hydrophobicity | Contamination, cure OOS | Goniometer | Deferred analysis |
+| Chemical Strengthening | Warpage | Increased bow | Ion exchange stress imbalance, thin regions | Flatness scan | Phase 2 — secondary capability |
+| Coating / Printing *(Phase 2)* | Haze | Coating haze | Coating thickness, cure profile | Haze meter | **Deferred — Phase 2** |
+| Coating / Printing *(Phase 2)* | Contact Angle | Low hydrophobicity | Contamination, cure OOS | Goniometer | **Deferred — Phase 2** |
 | AOI Inspection | AOI Result | Edge chip, scratch, stain | Upstream CNC, handling, coating | Automated optical scanner | **Pareto of defect types; heatmap by Machine × Defect_Location** |
 | AOI Inspection | Chipping Size | Edge chip (AOI-detected) | CNC tool wear window, fixture, coolant | AOI + microscope confirm | Link AOI fail to CNC traceability fields |
 | AOI Inspection | Defect Location | Edge vs. corner vs. feature | Tool path, fixture, part orientation | AOI defect map | Defect location heatmap |
@@ -49,8 +48,8 @@ When investigating the **edge chipping spike**, work the matrix in this order:
 3. **SPC** — control charts on chamfer and chipping; check for special cause vs. common cause
 4. **Capability** — Cp/Cpk for chamfer width against spec limits
 5. **Heatmap** — Machine × Shift (or Tool × Shift) defect rate
-6. **Root cause hypothesis** — tool wear + coolant pressure interaction, fixture B bias, night shift setup drift
-7. **ML risk (supporting)** — flag high-risk process windows; validate with engineering judgment
+6. **Root cause hypothesis** — `Tool_Life_Pct` ≥ 75% + low `Coolant_Pressure_bar`, `Fixture_ID` bias, `Shift` / `Machine_ID` effects (descriptive stratification only)
+7. **ML risk (supporting, Step 7 only)** — logistic regression on traceability and process fields; validate with engineering judgment
 
 ---
 
@@ -66,8 +65,8 @@ These are **simulated** spec limits for data generation and capability analysis�
 | Warpage | mm | ≤ 0.05 | Fail if > 0.10 |
 | CS | MPa | ≥ 750 | Fail if < 700 |
 | DOL | μm | ≥ 40 | Fail if < 35 |
-| Haze | % | ≤ 0.5 | Informational in Phase 1 |
-| Contact Angle | ° | ≥ 110 | Informational in Phase 1 |
+| Haze | % | ≤ 0.5 | **Deferred — Phase 2** (coating context) |
+| Contact Angle | ° | ≥ 110 | **Deferred — Phase 2** (coating context) |
 | AOI Result | pass/fail | Pass | Fail on any critical defect |
 
 ---
