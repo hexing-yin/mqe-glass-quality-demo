@@ -1,0 +1,71 @@
+Group_Type,Group_Value,Total_Count,Edge_Chipping_Count,Edge_Chipping_Rate
+Defect_Location,Camera_Hole,50000,206,0.41
+Defect_Location,Corner,50000,317,0.63
+Defect_Location,Edge,50000,898,1.8
+Defect_Location,Speaker_Slot,50000,139,0.28
+Machine_ID,CNC-01,8412,218,2.59
+Machine_ID,CNC-02,8291,230,2.77
+Machine_ID,CNC-03,8211,208,2.53
+Machine_ID,CNC-04,8214,367,4.47
+Machine_ID,CNC-05,8511,217,2.55
+Machine_ID,CNC-06,8361,320,3.83
+Machine_ID_x_Defect_Location,CNC-01 | Camera_Hole,8412,27,0.32
+Machine_ID_x_Defect_Location,CNC-01 | Corner,8412,45,0.53
+Machine_ID_x_Defect_Location,CNC-01 | Edge,8412,131,1.56
+Machine_ID_x_Defect_Location,CNC-01 | Speaker_Slot,8412,15,0.18
+Machine_ID_x_Defect_Location,CNC-02 | Camera_Hole,8291,32,0.39
+Machine_ID_x_Defect_Location,CNC-02 | Corner,8291,42,0.51
+Machine_ID_x_Defect_Location,CNC-02 | Edge,8291,135,1.63
+Machine_ID_x_Defect_Location,CNC-02 | Speaker_Slot,8291,21,0.25
+Machine_ID_x_Defect_Location,CNC-03 | Camera_Hole,8211,29,0.35
+Machine_ID_x_Defect_Location,CNC-03 | Corner,8211,44,0.54
+Machine_ID_x_Defect_Location,CNC-03 | Edge,8211,123,1.5
+Machine_ID_x_Defect_Location,CNC-03 | Speaker_Slot,8211,12,0.15
+Machine_ID_x_Defect_Location,CNC-04 | Camera_Hole,8214,38,0.46
+Machine_ID_x_Defect_Location,CNC-04 | Corner,8214,77,0.94
+Machine_ID_x_Defect_Location,CNC-04 | Edge,8214,205,2.5
+Machine_ID_x_Defect_Location,CNC-04 | Speaker_Slot,8214,47,0.57
+Machine_ID_x_Defect_Location,CNC-05 | Camera_Hole,8511,34,0.4
+Machine_ID_x_Defect_Location,CNC-05 | Corner,8511,42,0.49
+Machine_ID_x_Defect_Location,CNC-05 | Edge,8511,121,1.42
+Machine_ID_x_Defect_Location,CNC-05 | Speaker_Slot,8511,20,0.23
+Machine_ID_x_Defect_Location,CNC-06 | Camera_Hole,8361,46,0.55
+Machine_ID_x_Defect_Location,CNC-06 | Corner,8361,67,0.8
+Machine_ID_x_Defect_Location,CNC-06 | Edge,8361,183,2.19
+Machine_ID_x_Defect_Location,CNC-06 | Speaker_Slot,8361,24,0.29
+Fixture_ID_x_Defect_Location,FIX-A1 | Camera_Hole,5513,22,0.4
+Fixture_ID_x_Defect_Location,FIX-A1 | Corner,5513,43,0.78
+Fixture_ID_x_Defect_Location,FIX-A1 | Edge,5513,99,1.8
+Fixture_ID_x_Defect_Location,FIX-A1 | Speaker_Slot,5513,16,0.29
+Fixture_ID_x_Defect_Location,FIX-A2 | Camera_Hole,5560,19,0.34
+Fixture_ID_x_Defect_Location,FIX-A2 | Corner,5560,29,0.52
+Fixture_ID_x_Defect_Location,FIX-A2 | Edge,5560,83,1.49
+Fixture_ID_x_Defect_Location,FIX-A2 | Speaker_Slot,5560,12,0.22
+Fixture_ID_x_Defect_Location,FIX-A3 | Camera_Hole,5513,15,0.27
+Fixture_ID_x_Defect_Location,FIX-A3 | Corner,5513,40,0.73
+Fixture_ID_x_Defect_Location,FIX-A3 | Edge,5513,104,1.89
+Fixture_ID_x_Defect_Location,FIX-A3 | Speaker_Slot,5513,16,0.29
+Fixture_ID_x_Defect_Location,FIX-B1 | Camera_Hole,5444,20,0.37
+Fixture_ID_x_Defect_Location,FIX-B1 | Corner,5444,38,0.7
+Fixture_ID_x_Defect_Location,FIX-B1 | Edge,5444,94,1.73
+Fixture_ID_x_Defect_Location,FIX-B1 | Speaker_Slot,5444,14,0.26
+Fixture_ID_x_Defect_Location,FIX-B2 | Camera_Hole,5552,36,0.65
+Fixture_ID_x_Defect_Location,FIX-B2 | Corner,5552,50,0.9
+Fixture_ID_x_Defect_Location,FIX-B2 | Edge,5552,125,2.25
+Fixture_ID_x_Defect_Location,FIX-B2 | Speaker_Slot,5552,16,0.29
+Fixture_ID_x_Defect_Location,FIX-B3 | Camera_Hole,5496,25,0.45
+Fixture_ID_x_Defect_Location,FIX-B3 | Corner,5496,33,0.6
+Fixture_ID_x_Defect_Location,FIX-B3 | Edge,5496,88,1.6
+Fixture_ID_x_Defect_Location,FIX-B3 | Speaker_Slot,5496,20,0.36
+Fixture_ID_x_Defect_Location,FIX-C1 | Camera_Hole,5753,33,0.57
+Fixture_ID_x_Defect_Location,FIX-C1 | Corner,5753,38,0.66
+Fixture_ID_x_Defect_Location,FIX-C1 | Edge,5753,130,2.26
+Fixture_ID_x_Defect_Location,FIX-C1 | Speaker_Slot,5753,19,0.33
+Fixture_ID_x_Defect_Location,FIX-C2 | Camera_Hole,5602,17,0.3
+Fixture_ID_x_Defect_Location,FIX-C2 | Corner,5602,22,0.39
+Fixture_ID_x_Defect_Location,FIX-C2 | Edge,5602,93,1.66
+Fixture_ID_x_Defect_Location,FIX-C2 | Speaker_Slot,5602,17,0.3
+Fixture_ID_x_Defect_Location,FIX-C3 | Camera_Hole,5567,19,0.34
+Fixture_ID_x_Defect_Location,FIX-C3 | Corner,5567,24,0.43
+Fixture_ID_x_Defect_Location,FIX-C3 | Edge,5567,82,1.47
+Fixture_ID_x_Defect_Location,FIX-C3 | Speaker_Slot,5567,9,0.16
