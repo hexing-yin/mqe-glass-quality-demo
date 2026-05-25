@@ -74,7 +74,8 @@ A high-volume cover glass line shows **increased edge chipping and chamfer width
 
 **Python (`src/spc.py`):**
 - X-bar/R on chamfer width (CNC-04, subgroup n=5)
-- I-MR on chipping size (CNC-04, latest 500 parts)
+- I-MR on chipping size (CNC-04, latest 500 parts; exploratory only)
+- p-chart on Edge_Chipping rate (CNC-04, subgroup n=5)
 - Output: `outputs/reports/spc_*_summary.csv`, `outputs/figures/*_chart.png`
 
 **JMP (manual live demo):**
@@ -89,8 +90,12 @@ A high-volume cover glass line shows **increased edge chipping and chamfer width
 **Inputs:** `Chamfer_Width_mm`, spec limits (LSL 0.25, target 0.30, USL 0.35 mm)
 
 **Python (`src/capability.py`):**
-- Cp, Cpk, Pp, Ppk by analysis group (all data, CNC-04, tool life bins, coolant bins, interactions)
+- **Cp/Cpk** using within-subgroup sigma (Rbar/d2, n=5, time-sorted subgroups)
+- **Pp/Ppk** using overall sample sigma
+- By analysis group (all data, CNC-04, tool life bins, coolant bins, interactions)
 - Output: `outputs/reports/capability_summary.csv`, `outputs/figures/chamfer_capability_distribution.png`
+
+**Note:** Capability metrics are simulated diagnostic indicators, not certification values.
 
 **JMP (manual live demo):**
 - Process Capability platform with spec limit editor
@@ -116,7 +121,10 @@ A high-volume cover glass line shows **increased edge chipping and chamfer width
 
 **Objective:** Flag high-risk process windows for preventive review—not to replace engineering judgment. This is the **only** step that uses predictive ML models.
 
-**Inputs:** `Tool_Life_Pct`, `Spindle_Speed_rpm`, `Feed_Rate_mm_min`, `Coolant_Pressure_bar`, `Coolant_Pressure_Stability`, `Vacuum_Level_kPa`, `Chamfer_Width_mm`, `Machine_ID`, `Tool_ID`, `Fixture_ID`, `Shift` → target `Defect_Type == Edge_Chipping`
+**Inputs (process + traceability only — no CTQ output measurements):**
+`Tool_Life_Pct`, `Spindle_Speed_rpm`, `Feed_Rate_mm_min`, `Coolant_Pressure_bar`, `Coolant_Pressure_Stability`, `Vacuum_Level_kPa`, `Machine_ID`, `Tool_ID`, `Fixture_ID`, `Shift` → target `Defect_Type == Edge_Chipping`
+
+Do **not** use CTQ outputs (`Chamfer_Width_mm`, `Chipping_Size_um`) or inspection results as predictors — that would leak target information.
 
 **Python (`src/ml_risk.py`):**
 - Logistic regression (interpretable baseline) and random forest (nonlinear)
@@ -217,6 +225,6 @@ Defect signature
 | **Phase 1** | CNC chipping, chamfer, traceability, AOI yield, full Python pipeline, JMP export | **Complete** |
 | Phase 2 | CS/DOL deep dive; coating CTQs (`Haze_pct`, `Contact_Angle_deg`); optional Streamlit dashboard | Planned |
 | Phase 3 | ORT sampling (`ORT_Sampled`, `ORT_Result`); disposition flags (`Scrap_Flag`, `Rework_Flag`) | Planned |
-| Phase 4 | Derived processing dataset in `data/processed/`; within-subgroup sigma for capability | Planned |
+| Phase 4 | Derived processing dataset in `data/processed/` | Planned |
 
 Do not expand into unrelated defect modes until Phase 1 narrative is complete.

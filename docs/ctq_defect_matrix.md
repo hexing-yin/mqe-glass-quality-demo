@@ -62,7 +62,7 @@ These are **simulated** spec limits for data generation and capability analysis�
 | Chamfer Width | mm | 0.30 | 0.25 – 0.35 |
 | Chipping Size | μm | ≤ 50 | Fail if > 80 |
 | Thickness | mm | 0.70 | 0.68 – 0.72 |
-| Warpage | mm | ≤ 0.05 | Fail if > 0.10 |
+| Warpage | mm | ≤ 0.05 | Fail if > 0.08 |
 | CS | MPa | ≥ 750 | Fail if < 700 |
 | DOL | μm | ≥ 40 | Fail if < 35 |
 | Haze | % | ≤ 0.5 | **Deferred — Phase 2** (coating context) |

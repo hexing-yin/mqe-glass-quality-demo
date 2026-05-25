@@ -32,8 +32,8 @@ Cover glass is a brittle, high-volume precision process. Small shifts in tool we
 | 2 | [`src/validate_data.py`](src/validate_data.py) | Validate schema, ranges, and Phase 1 story assumptions |
 | 3 | [`src/pareto.py`](src/pareto.py) | Rank NG defect modes; confirm Edge_Chipping dominance |
 | 4 | [`src/stratify.py`](src/stratify.py) | Root cause stratification by machine, fixture, shift, tool life, coolant |
-| 5 | [`src/spc.py`](src/spc.py) | X-bar/R (chamfer) and I-MR (chipping) control charts on CNC-04 |
-| 6 | [`src/capability.py`](src/capability.py) | Cp/Cpk for chamfer width across normal vs high-risk windows |
+| 5 | [`src/spc.py`](src/spc.py) | X-bar/R (chamfer), I-MR (exploratory), and p-chart (Edge_Chipping rate) on CNC-04 |
+| 6 | [`src/capability.py`](src/capability.py) | Cp/Cpk (within-subgroup) and Pp/Ppk (overall) for chamfer width |
 | 7 | [`src/heatmap.py`](src/heatmap.py) | Edge_Chipping location patterns by machine and defect site |
 | 8 | [`src/ml_risk.py`](src/ml_risk.py) | Pre-process ML risk ranking (process + traceability inputs only) |
 | 9 | [`src/export_jmp.py`](src/export_jmp.py) | Export workbook for JMP import and live-demo analysis |
@@ -115,6 +115,7 @@ uv run python src/export_jmp.py
 | [`outputs/reports/chipping_stratification_summary.csv`](outputs/reports/chipping_stratification_summary.csv) | Root cause stratification |
 | [`outputs/reports/spc_chamfer_xbar_r_summary.csv`](outputs/reports/spc_chamfer_xbar_r_summary.csv) | Chamfer X-bar/R subgroups |
 | [`outputs/reports/spc_chipping_imr_summary.csv`](outputs/reports/spc_chipping_imr_summary.csv) | Chipping I-MR values |
+| [`outputs/reports/spc_chipping_p_chart_summary.csv`](outputs/reports/spc_chipping_p_chart_summary.csv) | Edge_Chipping p-chart subgroups |
 | [`outputs/reports/capability_summary.csv`](outputs/reports/capability_summary.csv) | Process capability by group |
 | [`outputs/reports/defect_location_summary.csv`](outputs/reports/defect_location_summary.csv) | Defect location summary |
 | [`outputs/reports/ml_risk_model_summary.csv`](outputs/reports/ml_risk_model_summary.csv) | ML model comparison |
@@ -127,7 +128,8 @@ uv run python src/export_jmp.py
 |------|-------------|
 | [`outputs/figures/defect_pareto.png`](outputs/figures/defect_pareto.png) | Defect Pareto chart |
 | [`outputs/figures/chamfer_xbar_r_chart.png`](outputs/figures/chamfer_xbar_r_chart.png) | Chamfer X-bar/R chart |
-| [`outputs/figures/chipping_imr_chart.png`](outputs/figures/chipping_imr_chart.png) | Chipping I-MR chart |
+| [`outputs/figures/chipping_imr_chart.png`](outputs/figures/chipping_imr_chart.png) | Chipping I-MR chart (exploratory) |
+| [`outputs/figures/spc_chipping_p_chart.png`](outputs/figures/spc_chipping_p_chart.png) | Edge_Chipping p-chart |
 | [`outputs/figures/chamfer_capability_distribution.png`](outputs/figures/chamfer_capability_distribution.png) | Capability distribution comparison |
 | [`outputs/figures/chipping_location_heatmap.png`](outputs/figures/chipping_location_heatmap.png) | Machine × location heatmap |
 | [`outputs/figures/ml_feature_importance.png`](outputs/figures/ml_feature_importance.png) | ML feature importance |

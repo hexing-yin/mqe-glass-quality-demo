@@ -178,6 +178,51 @@ def build_pchart_subgroups(machine_df: pd.DataFrame) -> pd.DataFrame:
     return subgroups
 
 
+def plot_pchart(pchart: pd.DataFrame, output_path: Path) -> None:
+    """
+    Save p-chart for Edge_Chipping rate by subgroup.
+
+    Preferred over I-MR for defect-rate monitoring when chipping size is
+    zero-inflated and right-skewed.
+    """
+    fig, ax = plt.subplots(figsize=(12, 5))
+
+    x = pchart["Subgroup_ID"]
+    cl = pchart["P_CL"].iloc[0]
+    ucl = pchart["P_UCL"].iloc[0]
+    lcl = pchart["P_LCL"].iloc[0]
+
+    ax.plot(x, pchart["P_Edge_Chipping"], marker="o", markersize=3, linewidth=0.8)
+    ax.axhline(cl, color="green", linestyle="-", linewidth=1, label="CL")
+    ax.axhline(ucl, color="red", linestyle="--", linewidth=1, label="UCL")
+    ax.axhline(lcl, color="red", linestyle="--", linewidth=1, label="LCL")
+
+    ooc = pchart[pchart["P_OOC"]]
+    if not ooc.empty:
+        ax.scatter(
+            ooc["Subgroup_ID"],
+            ooc["P_Edge_Chipping"],
+            color="red",
+            s=40,
+            zorder=5,
+            label="OOC",
+        )
+
+    ax.set_xlabel("Subgroup ID (time order)")
+    ax.set_ylabel("Edge_Chipping Rate")
+    ax.set_title(
+        f"p-Chart — Edge_Chipping Rate ({TARGET_MACHINE}, n={SUBGROUP_SIZE}, Simulated Data)"
+    )
+    ax.legend(loc="upper right", fontsize=8)
+    ax.grid(True, alpha=0.3)
+    ax.set_ylim(bottom=0)
+
+    fig.tight_layout()
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    fig.savefig(output_path, dpi=150)
+    plt.close(fig)
+
+
 def plot_xbar_r(subgroups: pd.DataFrame, output_path: Path) -> None:
     """Save two-panel X-bar and R chart."""
     fig, (ax_xbar, ax_r) = plt.subplots(2, 1, figsize=(12, 8), sharex=True)
@@ -315,6 +360,7 @@ def print_report(
     print(f"p-chart table:           {paths['pchart_csv']}")
     print(f"X-bar/R chart:           {paths['xbar_fig']}")
     print(f"I-MR chart:              {paths['imr_fig']}")
+    print(f"p-chart figure:          {paths['pchart_fig']}")
 
 
 def main() -> None:
@@ -325,6 +371,7 @@ def main() -> None:
         "pchart_csv": root / "outputs" / "reports" / "spc_chipping_p_chart_summary.csv",
         "xbar_fig": root / "outputs" / "figures" / "chamfer_xbar_r_chart.png",
         "imr_fig": root / "outputs" / "figures" / "chipping_imr_chart.png",
+        "pchart_fig": root / "outputs" / "figures" / "spc_chipping_p_chart.png",
     }
 
     df = load_data(default_data_path())
@@ -344,6 +391,7 @@ def main() -> None:
     # Part C: p-chart on Edge_Chipping rate (full machine history, n=5 subgroups)
     pchart = build_pchart_subgroups(machine_df)
     pchart.to_csv(paths["pchart_csv"], index=False)
+    plot_pchart(pchart, paths["pchart_fig"])
 
     print_report(TARGET_MACHINE, len(machine_df), subgroups, imr, pchart, paths)
 
