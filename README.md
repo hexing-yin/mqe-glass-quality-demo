@@ -20,7 +20,7 @@ Cover glass is a brittle, high-volume precision process. Small shifts in tool we
 - Use **traceability** to localize the problem
 - Apply **SPC and capability** to separate special cause from spec margin
 - Stratify by **process physics** (tool life × coolant, machine, fixture)
-- Use **ML as a screening aid**, not a substitute for engineering judgment
+- Use **ML for risk ranking / screening** (process inputs only), not automatic process control
 
 ---
 
@@ -35,7 +35,7 @@ Cover glass is a brittle, high-volume precision process. Small shifts in tool we
 | 5 | [`src/spc.py`](src/spc.py) | X-bar/R (chamfer) and I-MR (chipping) control charts on CNC-04 |
 | 6 | [`src/capability.py`](src/capability.py) | Cp/Cpk for chamfer width across normal vs high-risk windows |
 | 7 | [`src/heatmap.py`](src/heatmap.py) | Edge_Chipping location patterns by machine and defect site |
-| 8 | [`src/ml_risk.py`](src/ml_risk.py) | Interpretable ML risk screening (logistic regression + random forest) |
+| 8 | [`src/ml_risk.py`](src/ml_risk.py) | Pre-process ML risk ranking (process + traceability inputs only) |
 | 9 | [`src/export_jmp.py`](src/export_jmp.py) | Export workbook for JMP import and live-demo analysis |
 
 Planning documents: [`docs/process_map.md`](docs/process_map.md) · [`docs/analysis_plan.md`](docs/analysis_plan.md) · [`docs/data_dictionary.md`](docs/data_dictionary.md)
@@ -51,11 +51,13 @@ Planning documents: [`docs/process_map.md`](docs/process_map.md) · [`docs/analy
 | Dominant NG mode | Edge_Chipping — **80.95%** of NG parts |
 | Highest-risk process window | High tool life + unstable coolant |
 | Critical tool life + unstable coolant | **61.52%** actual Edge_Chipping rate |
-| Low-risk baseline Cpk (chamfer) | **1.399** (tool life < 75%, stable coolant) |
-| High wear + unstable coolant Cpk | **1.161** (mean shift toward USL) |
-| Top ML risk features | `Tool_Life_Pct`, `Chamfer_Width_mm`, `Coolant_Pressure_Stability` |
+| Low-risk baseline Cpk (chamfer) | **1.404** (within-subgroup; tool life < 75%, stable coolant) |
+| High wear + unstable Cpk | **1.181** (within-subgroup; mean shift toward USL) |
+| ML screening (no CTQ leakage) | ROC-AUC ~0.95; PR-AUC ~0.40; top inputs: `Tool_Life_Pct`, `Coolant_Pressure_Stability`, `Coolant_Pressure_bar` |
 
 High-risk machines (`CNC-04`, `CNC-06`) and fixtures (`FIX-B2`, `FIX-C1`) show elevated chipping. Edge location dominates defect maps; corners and feature cutouts (camera hole, speaker slot) are secondary clusters.
+
+ML ranks high-risk process windows using pre-inspection inputs only. It is a screening aid — not a production control system — and default 0.5 classification thresholds are suboptimal for rare defects; use predicted probabilities and PR-AUC instead.
 
 ---
 

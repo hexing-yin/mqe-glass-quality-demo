@@ -1,9 +1,16 @@
 """
 ML risk screening for Edge_Chipping on cover glass units.
 
+Pre-/in-process screening model: predictors are process parameters and
+traceability fields only — NOT CTQ outputs (chamfer, chipping size) or
+inspection results, which would leak target information.
+
 This model prioritizes which process windows deserve engineering review.
 It supports — but does not replace — traceability, SPC, capability study,
 DOE, and line validation. Do not use model output for automatic process control.
+
+Note: default 0.5 classification threshold is often suboptimal for imbalanced
+defect data; use predicted probabilities and PR-AUC for ranking windows.
 """
 
 from __future__ import annotations
@@ -18,6 +25,7 @@ from sklearn.ensemble import RandomForestClassifier
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import (
     accuracy_score,
+    average_precision_score,
     confusion_matrix,
     f1_score,
     precision_score,
@@ -39,7 +47,6 @@ NUMERIC_FEATURES = [
     "Coolant_Pressure_bar",
     "Coolant_Pressure_Stability",
     "Vacuum_Level_kPa",
-    "Chamfer_Width_mm",
 ]
 
 CATEGORICAL_FEATURES = [
@@ -111,7 +118,7 @@ def build_preprocessor() -> ColumnTransformer:
 
 
 def evaluate_model(name: str, y_true: np.ndarray, y_pred: np.ndarray, y_prob: np.ndarray) -> dict:
-    """Compute classification metrics and confusion matrix cells."""
+    """Compute classification metrics and confusion matrix cells (threshold = 0.5)."""
     tn, fp, fn, tp = confusion_matrix(y_true, y_pred).ravel()
     metrics = {
         "Model": name,
@@ -126,8 +133,10 @@ def evaluate_model(name: str, y_true: np.ndarray, y_pred: np.ndarray, y_prob: np
     }
     if len(np.unique(y_true)) > 1:
         metrics["ROC_AUC"] = round(roc_auc_score(y_true, y_prob), 4)
+        metrics["PR_AUC"] = round(average_precision_score(y_true, y_prob), 4)
     else:
         metrics["ROC_AUC"] = np.nan
+        metrics["PR_AUC"] = np.nan
     return metrics
 
 
@@ -231,17 +240,20 @@ def print_report(
 ) -> None:
     """Print concise ML risk summary to stdout."""
     print("--- ML Edge_Chipping Risk Report (Simulated Data) ---")
+    print("Predictors: process + traceability only (no CTQ measurement leakage).")
     print(f"Positive class rate:     {y.mean() * 100:.2f}%")
+    print("Note: metrics at 0.5 threshold; PR-AUC better for imbalanced screening.")
     print()
 
     for _, row in summary.iterrows():
         print(f"{row['Model']}:")
         print(
             f"  Accuracy={row['Accuracy']}, Precision={row['Precision']}, "
-            f"Recall={row['Recall']}, F1={row['F1']}, ROC-AUC={row['ROC_AUC']}"
+            f"Recall={row['Recall']}, F1={row['F1']}"
         )
+        print(f"  ROC-AUC={row['ROC_AUC']}, PR-AUC={row['PR_AUC']}")
         print(
-            f"  Confusion matrix: TN={row['TN']}, FP={row['FP']}, "
+            f"  Confusion matrix (0.5): TN={row['TN']}, FP={row['FP']}, "
             f"FN={row['FN']}, TP={row['TP']}"
         )
     print()

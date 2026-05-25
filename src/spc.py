@@ -104,7 +104,13 @@ def build_xbar_r_subgroups(machine_df: pd.DataFrame) -> pd.DataFrame:
 
 
 def build_imr_table(machine_df: pd.DataFrame) -> pd.DataFrame:
-    """Build I-MR table from the latest consecutive records on one machine."""
+    """
+    Build I-MR table from the latest consecutive records on one machine.
+
+    Caveat: Chipping_Size_um is zero-inflated and right-skewed (mostly zeros,
+    occasional large spikes). I-MR assumes approximate normality — use this
+    chart as exploratory; a p-chart on defect rate is more appropriate.
+    """
     sample = machine_df.tail(IMR_SAMPLE_SIZE).copy().reset_index(drop=True)
     sample["Individual_Chipping_um"] = sample["Chipping_Size_um"]
     sample["Moving_Range_Chipping_um"] = sample["Individual_Chipping_um"].diff().abs()
@@ -131,6 +137,45 @@ def build_imr_table(machine_df: pd.DataFrame) -> pd.DataFrame:
     sample.loc[0, "MR_OOC"] = False
 
     return sample
+
+
+def build_pchart_subgroups(machine_df: pd.DataFrame) -> pd.DataFrame:
+    """
+    Build p-chart subgroups for Edge_Chipping rate (n=5 consecutive parts).
+
+    Each subgroup records defect count and proportion — better suited to
+    zero-inflated defect data than I-MR on continuous chipping size.
+    """
+    n_rows = len(machine_df)
+    n_complete = (n_rows // SUBGROUP_SIZE) * SUBGROUP_SIZE
+    usable = machine_df.iloc[:n_complete].copy()
+    usable["Edge_Chipping"] = (usable["Defect_Type"] == "Edge_Chipping").astype(int)
+    usable["Subgroup_ID"] = np.arange(len(usable)) // SUBGROUP_SIZE + 1
+
+    subgroups = (
+        usable.groupby("Subgroup_ID", as_index=False)
+        .agg(
+            Process_Time_Start=("Process_Time", "min"),
+            Process_Time_End=("Process_Time", "max"),
+            Defect_Count=("Edge_Chipping", "sum"),
+            Subgroup_Size=("Edge_Chipping", "count"),
+        )
+    )
+    subgroups["P_Edge_Chipping"] = (
+        subgroups["Defect_Count"] / subgroups["Subgroup_Size"]
+    ).round(4)
+
+    p_bar = subgroups["P_Edge_Chipping"].mean()
+    # Standard p-chart limits for constant n=5
+    sigma_p = np.sqrt(p_bar * (1 - p_bar) / SUBGROUP_SIZE)
+    subgroups["P_CL"] = round(p_bar, 4)
+    subgroups["P_UCL"] = round(min(1.0, p_bar + 3 * sigma_p), 4)
+    subgroups["P_LCL"] = round(max(0.0, p_bar - 3 * sigma_p), 4)
+    subgroups["P_OOC"] = (
+        (subgroups["P_Edge_Chipping"] > subgroups["P_UCL"])
+        | (subgroups["P_Edge_Chipping"] < subgroups["P_LCL"])
+    )
+    return subgroups
 
 
 def plot_xbar_r(subgroups: pd.DataFrame, output_path: Path) -> None:
@@ -249,6 +294,7 @@ def print_report(
     machine_rows: int,
     subgroups: pd.DataFrame,
     imr: pd.DataFrame,
+    pchart: pd.DataFrame,
     paths: dict[str, Path],
 ) -> None:
     """Print concise SPC summary to stdout."""
@@ -260,8 +306,13 @@ def print_report(
     print(f"R OOC count:             {subgroups['R_OOC'].sum():,}")
     print(f"I chart OOC count:       {imr['I_OOC'].sum():,}")
     print(f"MR chart OOC count:      {imr['MR_OOC'].sum():,}")
+    print(f"p-chart OOC count:       {pchart['P_OOC'].sum():,}")
+    print()
+    print("Note: I-MR on Chipping_Size_um is exploratory — data are zero-inflated")
+    print("      and right-skewed. Prefer p-chart for Edge_Chipping rate monitoring.")
     print(f"X-bar/R table:           {paths['xbar_csv']}")
     print(f"I-MR table:              {paths['imr_csv']}")
+    print(f"p-chart table:           {paths['pchart_csv']}")
     print(f"X-bar/R chart:           {paths['xbar_fig']}")
     print(f"I-MR chart:              {paths['imr_fig']}")
 
@@ -271,6 +322,7 @@ def main() -> None:
     paths = {
         "xbar_csv": root / "outputs" / "reports" / "spc_chamfer_xbar_r_summary.csv",
         "imr_csv": root / "outputs" / "reports" / "spc_chipping_imr_summary.csv",
+        "pchart_csv": root / "outputs" / "reports" / "spc_chipping_p_chart_summary.csv",
         "xbar_fig": root / "outputs" / "figures" / "chamfer_xbar_r_chart.png",
         "imr_fig": root / "outputs" / "figures" / "chipping_imr_chart.png",
     }
@@ -284,12 +336,16 @@ def main() -> None:
     subgroups.to_csv(paths["xbar_csv"], index=False)
     plot_xbar_r(subgroups, paths["xbar_fig"])
 
-    # Part B: I-MR on chipping size (latest 500 parts)
+    # Part B: I-MR on chipping size (latest 500 parts; exploratory only)
     imr = build_imr_table(machine_df)
     imr.to_csv(paths["imr_csv"], index=False)
     plot_imr(imr, paths["imr_fig"])
 
-    print_report(TARGET_MACHINE, len(machine_df), subgroups, imr, paths)
+    # Part C: p-chart on Edge_Chipping rate (full machine history, n=5 subgroups)
+    pchart = build_pchart_subgroups(machine_df)
+    pchart.to_csv(paths["pchart_csv"], index=False)
+
+    print_report(TARGET_MACHINE, len(machine_df), subgroups, imr, pchart, paths)
 
 
 if __name__ == "__main__":

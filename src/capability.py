@@ -1,15 +1,11 @@
 """
 Process capability analysis for Chamfer_Width_mm.
 
-Cp asks: "Does the process spread fit inside the spec width?"
-Cpk asks: "Is the process centered AND capable?" (accounts for mean shift)
+Cp/Cpk use within-subgroup variation (short-term, subgroup ranges).
+Pp/Ppk use overall sample variation (long-term, includes drift between subgroups).
 
-These are simulated diagnostic metrics. Control limits (from SPC) describe
-process stability; spec limits (LSL/USL) describe customer/product requirements.
-They answer different questions.
-
-Note: This version uses overall standard deviation for Cp, Cpk, Pp, and Ppk.
-A later version could estimate within-subgroup sigma from X-bar/R data.
+These are simulated diagnostic indicators — not certification metrics.
+Control limits (SPC) and spec limits (LSL/USL) answer different questions.
 """
 
 from __future__ import annotations
@@ -31,6 +27,10 @@ UNSTABLE_COOLANT_MAX = 0.92
 
 HIGH_RISK_MACHINE = "CNC-04"
 
+# Within-subgroup estimation: consecutive subgroups of n=5, sigma_hat = Rbar / d2
+SUBGROUP_SIZE = 5
+D2_N5 = 2.326
+
 
 def project_root() -> Path:
     """Return repository root (parent of src/)."""
@@ -43,46 +43,62 @@ def default_data_path() -> Path:
 
 def load_data(path: Path) -> pd.DataFrame:
     """Load synthetic dataset; preserve 'None' as a valid defect label."""
-    return pd.read_csv(path, keep_default_na=False)
+    return pd.read_csv(path, parse_dates=["Process_Time"], keep_default_na=False)
 
 
-def safe_capability_indices(mean: float, std: float) -> tuple[float, float, float, float]:
+def estimate_sigma_within(values: pd.Series, process_times: pd.Series) -> float:
     """
-    Compute Cp, Cpk, Pp, Ppk using overall sigma.
-    Returns NaN when std is zero (no variation to assess).
+    Estimate within-subgroup sigma from consecutive subgroups (n=5) sorted by time.
+
+    Uses Rbar / d2 with d2 = 2.326 for n=5.
     """
-    if std == 0 or np.isnan(std):
-        return (np.nan, np.nan, np.nan, np.nan)
+    ordered = (
+        pd.DataFrame({"value": values.to_numpy(), "time": process_times.to_numpy()})
+        .sort_values("time")
+        .reset_index(drop=True)
+    )
+    vals = ordered["value"].to_numpy()
+    n_complete = (len(vals) // SUBGROUP_SIZE) * SUBGROUP_SIZE
+    if n_complete < SUBGROUP_SIZE:
+        return np.nan
 
-    cp = (USL - LSL) / (6 * std)
-    cpu = (USL - mean) / (3 * std)
-    cpl = (mean - LSL) / (3 * std)
-    cpk = min(cpu, cpl)
-
-    # First version: Pp/Ppk use same overall sigma as Cp/Cpk
-    pp = cp
-    ppk = cpk
-
-    return (round(cp, 3), round(cpk, 3), round(pp, 3), round(ppk, 3))
+    usable = vals[:n_complete].reshape(-1, SUBGROUP_SIZE)
+    ranges = usable.max(axis=1) - usable.min(axis=1)
+    r_bar = ranges.mean()
+    return float(r_bar / D2_N5)
 
 
-def compute_capability(values: pd.Series, group_name: str) -> dict:
+def cp_cpk_from_sigma(mean: float, sigma: float) -> tuple[float, float]:
+    """Compute Cp and Cpk from a sigma estimate; return NaN if sigma invalid."""
+    if sigma == 0 or np.isnan(sigma):
+        return (np.nan, np.nan)
+    cp = (USL - LSL) / (6 * sigma)
+    cpk = min((USL - mean) / (3 * sigma), (mean - LSL) / (3 * sigma))
+    return (round(cp, 3), round(cpk, 3))
+
+
+def compute_capability(group_df: pd.DataFrame, group_name: str) -> dict:
     """Calculate capability metrics for one analysis group."""
+    values = group_df["Chamfer_Width_mm"]
     count = len(values)
     mean = values.mean()
-    std = values.std(ddof=1) if count > 1 else 0.0
+    std_overall = values.std(ddof=1) if count > 1 else 0.0
+    std_within = estimate_sigma_within(values, group_df["Process_Time"])
 
     below_lsl = int((values < LSL).sum())
     above_usl = int((values > USL).sum())
     oos_rate = round((below_lsl + above_usl) / count * 100, 2) if count else np.nan
 
-    cp, cpk, pp, ppk = safe_capability_indices(mean, std)
+    # Cp/Cpk: within-subgroup sigma; Pp/Ppk: overall sigma
+    cp, cpk = cp_cpk_from_sigma(mean, std_within)
+    pp, ppk = cp_cpk_from_sigma(mean, std_overall)
 
     return {
         "Group_Name": group_name,
         "Count": count,
         "Mean": round(mean, 4),
-        "Std_Overall": round(std, 4) if count > 1 else 0.0,
+        "Std_Overall": round(std_overall, 4) if count > 1 else 0.0,
+        "Std_Within": round(std_within, 4) if not np.isnan(std_within) else np.nan,
         "LSL": LSL,
         "USL": USL,
         "Target": TARGET,
@@ -119,17 +135,11 @@ def define_groups(df: pd.DataFrame) -> dict[str, pd.Series]:
 def build_capability_summary(df: pd.DataFrame) -> pd.DataFrame:
     """Compute capability table for all defined groups."""
     groups = define_groups(df)
-    rows = [
-        compute_capability(df.loc[mask, "Chamfer_Width_mm"], name)
-        for name, mask in groups.items()
-    ]
+    rows = [compute_capability(df.loc[mask], name) for name, mask in groups.items()]
     return pd.DataFrame(rows)
 
 
-def plot_distribution_comparison(
-    df: pd.DataFrame,
-    output_path: Path,
-) -> None:
+def plot_distribution_comparison(df: pd.DataFrame, output_path: Path) -> None:
     """Compare chamfer distributions for low-risk vs high-risk process windows."""
     groups = define_groups(df)
     low_risk = df.loc[groups["Low_Risk_Baseline"], "Chamfer_Width_mm"]
@@ -186,6 +196,7 @@ def print_report(summary: pd.DataFrame, csv_path: Path, fig_path: Path) -> None:
 
     print("--- Process Capability Report (Simulated Data) ---")
     print(f"Spec limits:             LSL={LSL}, Target={TARGET}, USL={USL} mm")
+    print("Note: Cp/Cpk use within-subgroup sigma (Rbar/d2, n=5); Pp/Ppk use overall sigma.")
     print()
     print(f"All_Data:                Cpk={all_data['Cpk']}, Ppk={all_data['Ppk']}, "
           f"OOS={all_data['OOS_Rate']}%")
