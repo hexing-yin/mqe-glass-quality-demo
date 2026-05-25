@@ -29,6 +29,24 @@ This project was developed using an AI-assisted engineering workflow. ChatGPT wa
 
 All key engineering decisions were reviewed and finalized manually, including the synthetic manufacturing scenario, traceability structure, statistical assumptions, SPC and capability methods, ML leakage-control decisions, and final MQE interpretation. AI tools were used to accelerate implementation, but the project logic, validation, and engineering conclusions were owned and checked by the author.
 
+---
+
+## JMP Interactive Review Layer
+
+In addition to the reproducible Python pipeline, this project includes a JMP interactive review layer. The full 50,000-row synthetic unit-level dataset was imported into JMP and saved as a JMP data table under `outputs/jmp/`.
+
+The JMP layer was used to create interactive review plots for:
+
+- Chamfer-width CTQ distribution
+- Tool-life × coolant-stability stratification for edge-chipping risk
+- Edge-chipping p-chart / out-of-control subgroup review
+
+This reflects a practical MQE workflow: Python is used for reproducible batch analytics, while JMP is used for interactive engineering review, quick filtering, visual confirmation, and live discussion with cross-functional teams.
+
+Python remains the source of truth for data generation and reproducible calculations. JMP is used as an interactive review and visualization layer.
+
+---
+
 ## Project Workflow
 
 | Step | Module | Purpose |
@@ -75,8 +93,9 @@ mqe-glass-quality-demo/
 ├── data/processed/            # Reserved for future derived datasets
 ├── docs/                      # Process map, CTQ matrix, data dictionary, analysis plan
 ├── outputs/
-│   ├── figures/               # Pareto, SPC, capability, heatmap, ML charts
-│   └── reports/               # CSV summaries and JMP export workbook
+│   ├── figures/               # Python-generated Pareto, SPC, capability, heatmap, ML charts
+│   ├── reports/               # CSV summaries and JMP export workbook
+│   └── jmp/                   # JMP data table and JMP-generated review figures
 ├── src/                       # Analysis modules (see workflow above)
 ├── pyproject.toml
 └── README.md
@@ -139,6 +158,16 @@ uv run python src/export_jmp.py
 | [`outputs/figures/chipping_location_heatmap.png`](outputs/figures/chipping_location_heatmap.png) | Machine × location heatmap |
 | [`outputs/figures/ml_feature_importance.png`](outputs/figures/ml_feature_importance.png) | ML feature importance |
 
+### JMP Interactive Review Artifacts
+
+| File | Description |
+|------|-------------|
+| [`outputs/jmp/cover_glass_units.jmp`](outputs/jmp/cover_glass_units.jmp) | JMP data table imported from the full 50,000-row synthetic unit-level dataset |
+| [`outputs/jmp/figures/jmp_chamfer_distribution.png`](outputs/jmp/figures/jmp_chamfer_distribution.png) | JMP CTQ distribution review for chamfer width |
+| [`outputs/jmp/figures/jmp_tool_life_coolant_stratification.png`](outputs/jmp/figures/jmp_tool_life_coolant_stratification.png) | JMP Graph Builder view of tool-life × coolant-stability edge-chipping risk |
+| [`outputs/jmp/figures/jmp_edge_chipping_ooc_highlight.png`](outputs/jmp/figures/jmp_edge_chipping_ooc_highlight.png) | JMP review of out-of-control edge-chipping subgroups |
+| [`outputs/jmp/figures/jmp_edge_chipping_p_chart_full.png`](outputs/jmp/figures/jmp_edge_chipping_p_chart_full.png) | JMP p-chart view with center line and control limits |
+
 ---
 
 ## Interview Positioning
@@ -157,7 +186,7 @@ Defect signature
                 → Yield improvement (measurable recovery)
 ```
 
-**Python** handles reproducible data generation, batch analysis, and ML screening. **JMP** supports interactive confirmatory analysis during live demo—import [`outputs/reports/jmp_export_cover_glass_quality.xlsx`](outputs/reports/jmp_export_cover_glass_quality.xlsx) manually (Distribution, Graph Builder, Fit Y by X, Control Chart Builder, Process Capability). A Streamlit dashboard is **not implemented** (optional Phase 2).
+**Python** handles reproducible data generation, batch analysis, SPC/capability calculations, and ML screening. **JMP** supports interactive engineering review during live demo. The full 50,000-row synthetic dataset was imported into JMP and saved as [`outputs/jmp/cover_glass_units.jmp`](outputs/jmp/cover_glass_units.jmp), with JMP-generated review figures under [`outputs/jmp/figures/`](outputs/jmp/figures/). A Streamlit dashboard is **not implemented** (optional Phase 2).
 
 ---
 
