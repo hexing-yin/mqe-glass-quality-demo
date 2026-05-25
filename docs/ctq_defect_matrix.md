@@ -61,7 +61,7 @@ These are **simulated** spec limits for data generation and capability analysis�
 |-----|------|----------------|---------------------------|
 | Chamfer Width | mm | 0.30 | 0.25 – 0.35 |
 | Chipping Size | μm | ≤ 50 | Fail if > 80 |
-| Thickness | mm | 0.55 | 0.53 – 0.57 |
+| Thickness | mm | 0.70 | 0.68 – 0.72 |
 | Warpage | mm | ≤ 0.05 | Fail if > 0.10 |
 | CS | MPa | ≥ 750 | Fail if < 700 |
 | DOL | μm | ≥ 40 | Fail if < 35 |

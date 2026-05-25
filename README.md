@@ -63,7 +63,8 @@ High-risk machines (`CNC-04`, `CNC-06`) and fixtures (`FIX-B2`, `FIX-C1`) show e
 
 ```text
 mqe-glass-quality-demo/
-├── data/raw/                  # Synthetic CSV (generated)
+├── data/raw/
+│   └── cover_glass_synthetic.csv   # 50k-row Phase 1 dataset (synthetic)
 ├── data/processed/            # Reserved for future derived datasets
 ├── docs/                      # Process map, CTQ matrix, data dictionary, analysis plan
 ├── outputs/
@@ -144,7 +145,7 @@ Defect signature
                 → Yield improvement (measurable recovery)
 ```
 
-**Python** handles reproducible data generation, batch analysis, and ML screening. **JMP** (via exported workbook) supports interactive confirmatory analysis during live demo—Distribution, Graph Builder, Fit Y by X, Control Chart Builder, Process Capability.
+**Python** handles reproducible data generation, batch analysis, and ML screening. **JMP** supports interactive confirmatory analysis during live demo—import [`outputs/reports/jmp_export_cover_glass_quality.xlsx`](outputs/reports/jmp_export_cover_glass_quality.xlsx) manually (Distribution, Graph Builder, Fit Y by X, Control Chart Builder, Process Capability). A Streamlit dashboard is **not implemented** (optional Phase 2).
 
 ---
 

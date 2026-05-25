@@ -42,32 +42,15 @@ Use synthetic data only.
 
 Do not imply the data comes from Apple, Lens Technology, Corning, or any real supplier.
 
-First dataset target: about 50,000 rows.
+Primary dataset: `data/raw/cover_glass_synthetic.csv` (~50,000 rows).
 
-Important fields:
+Phase 1 CSV fields:
 
-- Glass_ID
-- Lot_ID
-- Product_Model
-- Line_ID
-- Machine_ID
-- Tool_ID
-- Fixture_ID
-- Shift
-- Operator_ID
-- Process_Time
-- Raw_Glass_Batch
-- Inspection_Station
-- Final_Result
-- Chamfer_Width_mm
-- Chipping_Size_um
-- Thickness_mm
-- Warpage_mm
-- CS_MPa
-- DOL_um
-- AOI_Result
-- Defect_Type
-- Defect_Location
+- Glass_ID, Lot_ID, Product_Model, Raw_Glass_Batch, Line_ID
+- Machine_ID, Tool_ID, Fixture_ID, Operator_ID, Shift, Process_Time, Inspection_Station
+- Tool_Life_Pct, Spindle_Speed_rpm, Feed_Rate_mm_min, Coolant_Pressure_bar, Coolant_Pressure_Stability, Vacuum_Level_kPa
+- Chamfer_Width_mm, Chipping_Size_um, Thickness_mm, Warpage_mm, CS_MPa, DOL_um
+- Defect_Type, Defect_Location, AOI_Result, Final_Result
 
 ## Coding Rules
 
@@ -95,27 +78,33 @@ Do not use hardcoded local absolute paths.
 
 Before large or multi-file changes, first explain the plan and list files to be changed.
 
-## Planned Structure
+## Repository Structure
 
-- data/raw/
-- data/processed/
+- data/raw/ — `cover_glass_synthetic.csv`
+- data/processed/ — reserved for derived datasets
 - notebooks/
 - src/
 - outputs/figures/
 - outputs/reports/
-- app/
+- app/ — Streamlit (Phase 2, not implemented)
 - docs/
 
-## Planned Modules
+## Implemented Modules (Phase 1)
 
 - src/generate_data.py
 - src/validate_data.py
 - src/pareto.py
+- src/stratify.py
 - src/spc.py
 - src/capability.py
 - src/heatmap.py
 - src/ml_risk.py
-- app/app.py
+- src/export_jmp.py
+
+## Phase 2 / Not Yet Implemented
+
+- app/app.py — Streamlit dashboard (optional)
+- Deferred CSV fields: Cycle_Time_sec, Haze_pct, Contact_Angle_deg, Defect_Count, Scrap_Flag, Rework_Flag, ORT_Sampled, ORT_Result
 
 ## Interview Positioning
 
