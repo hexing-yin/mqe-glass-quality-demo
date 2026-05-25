@@ -209,6 +209,7 @@ def add_title_slide(
     prs: Presentation,
     title: str,
     subtitle_lines: list[str],
+    author_lines: list[str] | None = None,
     notes: str = "",
 ) -> None:
     slide = _blank_slide(prs)
@@ -219,10 +220,61 @@ def add_title_slide(
     tf.text = title
     _style_title(tf, size=36)
 
-    sub_box = slide.shapes.add_textbox(Inches(0.8), Inches(3.3), Inches(11.5), Inches(2.0))
+    sub_box = slide.shapes.add_textbox(Inches(0.8), Inches(3.3), Inches(11.5), Inches(1.4))
     _add_bullets(sub_box.text_frame, subtitle_lines, size=22)
 
+    if author_lines:
+        author_box = slide.shapes.add_textbox(Inches(0.8), Inches(4.85), Inches(11.5), Inches(1.0))
+        atf = author_box.text_frame
+        for i, line in enumerate(author_lines):
+            p = atf.paragraphs[0] if i == 0 else atf.add_paragraph()
+            p.text = line
+            p.font.size = Pt(18 if i == 0 else 16)
+            p.font.bold = i == 0
+            p.font.color.rgb = DARK_GRAY if i == 0 else LIGHT_GRAY
+            p.space_after = Pt(4)
+
     _add_footer(slide)
+    _add_notes(slide, notes)
+
+
+def add_thank_you_slide(
+    prs: Presentation,
+    name: str,
+    github_url: str,
+    notes: str = "",
+) -> None:
+    slide = _blank_slide(prs)
+    _set_slide_bg_white(slide)
+
+    title_box = slide.shapes.add_textbox(Inches(0.8), Inches(2.4), Inches(11.5), Inches(1.0))
+    ttf = title_box.text_frame
+    ttf.text = "Thank You"
+    _style_title(ttf, size=40)
+    ttf.paragraphs[0].alignment = PP_ALIGN.CENTER
+
+    name_box = slide.shapes.add_textbox(Inches(0.8), Inches(3.55), Inches(11.5), Inches(0.6))
+    ntf = name_box.text_frame
+    ntf.text = name
+    ntf.paragraphs[0].font.size = Pt(22)
+    ntf.paragraphs[0].font.bold = True
+    ntf.paragraphs[0].font.color.rgb = DARK_GRAY
+    ntf.paragraphs[0].alignment = PP_ALIGN.CENTER
+
+    link_box = slide.shapes.add_textbox(Inches(0.8), Inches(4.35), Inches(11.5), Inches(0.6))
+    ltf = link_box.text_frame
+    ltf.text = f"GitHub: {github_url}"
+    ltf.paragraphs[0].font.size = Pt(16)
+    ltf.paragraphs[0].font.color.rgb = ACCENT
+    ltf.paragraphs[0].alignment = PP_ALIGN.CENTER
+
+    tag_box = slide.shapes.add_textbox(Inches(0.8), Inches(5.15), Inches(11.5), Inches(0.45))
+    gtf = tag_box.text_frame
+    gtf.text = FOOTER_TEXT
+    gtf.paragraphs[0].font.size = Pt(12)
+    gtf.paragraphs[0].font.color.rgb = LIGHT_GRAY
+    gtf.paragraphs[0].alignment = PP_ALIGN.CENTER
+
     _add_notes(slide, notes)
 
 
@@ -471,6 +523,10 @@ def build_deck() -> Presentation:
         [
             "Simulated MQE / Brittles portfolio project",
             "Synthetic data only",
+        ],
+        author_lines=[
+            "Hexing Yin",
+            "Ph.D. in Materials Science and Engineering, UCLA",
         ],
         notes=(
             "I'm walking through a simulated cover-glass yield excursion. "
@@ -747,6 +803,13 @@ def build_deck() -> Presentation:
             "proved it with SPC and capability, and wrote containment plus preventive controls. "
             "All reproducible in Python, reviewable in JMP."
         ),
+    )
+
+    add_thank_you_slide(
+        prs,
+        name="Hexing Yin",
+        github_url="https://github.com/hexing-yin/mqe-glass-quality-demo",
+        notes="Pause for questions. Point them to the GitHub repo if they want to dig into the code.",
     )
 
     return prs
