@@ -23,6 +23,11 @@ Cover glass is a brittle, high-volume precision process. Small shifts in tool we
 - Use **ML for risk ranking / screening** (process inputs only), not automatic process control
 
 ---
+## AI-Assisted Development Workflow
+
+This project was developed using an AI-assisted engineering workflow. ChatGPT was used for project planning, MQE storyline development, statistical logic review, and interview-oriented explanation. Cursor was used as an AI-assisted IDE for Python implementation, debugging, refactoring, and project organization. Claude Code was used for larger multi-file edits, pipeline updates, and documentation improvements.
+
+All key engineering decisions were reviewed and finalized manually, including the synthetic manufacturing scenario, traceability structure, statistical assumptions, SPC and capability methods, ML leakage-control decisions, and final MQE interpretation. AI tools were used to accelerate implementation, but the project logic, validation, and engineering conclusions were owned and checked by the author.
 
 ## Project Workflow
 
