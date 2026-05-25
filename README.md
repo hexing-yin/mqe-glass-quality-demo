@@ -86,7 +86,10 @@ mqe-glass-quality-demo/
 ```bash
 uv sync
 
-# Full analysis pipeline
+# One-command full pipeline
+uv run python main.py
+
+# Or run modules individually (step-by-step)
 uv run python src/generate_data.py
 uv run python src/validate_data.py
 uv run python src/pareto.py
@@ -98,7 +101,7 @@ uv run python src/ml_risk.py
 uv run python src/export_jmp.py
 ```
 
-Run modules in order on first setup. Subsequent modules can be re-run independently after `generate_data.py`.
+`main.py` runs all steps in order and stops if any step fails. Individual scripts can be re-run after `generate_data.py` when you only need one analysis.
 
 ---
 
