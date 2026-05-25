@@ -20,3 +20,6 @@ wheels/
 # The Phase 1 CSV (data/raw/cover_glass_synthetic.csv) is intentionally committed for portfolio use.
 # data/raw/*.csv
 # data/processed/
+
+# Local generated presentation decks
+outputs/presentation/*.pptx
