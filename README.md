@@ -163,6 +163,7 @@ uv run python src/export_jmp.py
 | File | Description |
 |------|-------------|
 | [`outputs/jmp/cover_glass_units.jmp`](outputs/jmp/cover_glass_units.jmp) | JMP data table imported from the full 50,000-row synthetic unit-level dataset |
+| [`outputs/jmp/cover_glass_quality_demo.jmpprj`](outputs/jmp/cover_glass_quality_demo.jmpprj) | JMP project file for the interactive review layer |
 | [`outputs/jmp/figures/jmp_chamfer_distribution.png`](outputs/jmp/figures/jmp_chamfer_distribution.png) | JMP CTQ distribution review for chamfer width |
 | [`outputs/jmp/figures/jmp_tool_life_coolant_stratification.png`](outputs/jmp/figures/jmp_tool_life_coolant_stratification.png) | JMP Graph Builder view of tool-life × coolant-stability edge-chipping risk |
 | [`outputs/jmp/figures/jmp_edge_chipping_ooc_highlight.png`](outputs/jmp/figures/jmp_edge_chipping_ooc_highlight.png) | JMP review of out-of-control edge-chipping subgroups |
